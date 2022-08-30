@@ -107,7 +107,7 @@ action:
     conditions:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.channel == !input 'button_one' and trigger.event.data.param == 'PRESS_SHORT' }}
+          {{ trigger.event.data.channel == 1 and trigger.event.data.param == 'PRESS_SHORT' }}
     sequence:
     - alias: Set seq number to 1
       service: input_number.set_value
@@ -119,7 +119,7 @@ action:
     - and:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.channel == !input 'button_two' and trigger.event.data.param == 'PRESS_SHORT' }}
+          {{ trigger.event.data.channel == 2 and trigger.event.data.param == 'PRESS_SHORT' }}
       - condition: template
         value_template: '{{ is_state( seq_status_ent, ''1.0'') }}'
     sequence:
@@ -134,7 +134,7 @@ action:
     - and:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.channel == !input 'button_three' and trigger.event.data.param == 'PRESS_SHORT' }}
+          {{ trigger.event.data.channel == 3 and trigger.event.data.param == 'PRESS_SHORT' }}
       - condition: template
         value_template: '{{ is_state( seq_status_ent, ''3.0'') }}'
     sequence:
@@ -149,7 +149,7 @@ action:
     - and:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.channel == !input 'button_four' and trigger.event.data.param == 'PRESS_SHORT' }}
+          {{ trigger.event.data.channel == 4 and trigger.event.data.param == 'PRESS_SHORT' }}
       - condition: template
         value_template: '{{ is_state( seq_status_ent, ''7.0'') }}'
     sequence:
@@ -164,7 +164,7 @@ action:
     - and:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.channel == !input 'button_five' and trigger.event.data.param == 'PRESS_SHORT' }}
+          {{ trigger.event.data.channel == 5 and trigger.event.data.param == 'PRESS_SHORT' }}
       - condition: template
         value_template: '{{ is_state( seq_status_ent, ''15.0'') }}'
     sequence:
