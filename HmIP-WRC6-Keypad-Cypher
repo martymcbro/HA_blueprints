@@ -78,6 +78,11 @@ blueprint:
           mode: slider
           step: 1.0
 variables:
+  button_1: !input 'button_one'
+  button_2: !input 'button_two'
+  button_3: !input 'button_three'
+  button_4: !input 'button_four'
+  button_5: !input 'button_five'
   seq_status_ent: !input 'seq_status'
   seq_status_last: '{{ expand(seq_status_ent)[0].last_changed | as_timestamp }}'
   seq_status_val: '{{ expand(seq_status_ent)[0].state }}'
@@ -107,7 +112,7 @@ action:
     conditions:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.subtype == !input 'button_one' and trigger.event.data.type == 'press_short' }}
+          {{ trigger.event.data.subtype == button_1 and trigger.event.data.type == 'press_short' }}
     sequence:
     - alias: Set seq number to 1
       service: input_number.set_value
@@ -119,7 +124,7 @@ action:
     - and:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.subtype == !input 'button_two' and trigger.event.data.type == 'press_short' }}
+          {{ trigger.event.data.subtype == button_2 and trigger.event.data.type == 'press_short' }}
       - condition: template
         value_template: '{{ is_state( seq_status_ent, ''1.0'') }}'
     sequence:
@@ -134,7 +139,7 @@ action:
     - and:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.subtype == !input 'button_three' and trigger.event.data.type == 'press_short' }}
+          {{ trigger.event.data.subtype == button_3 and trigger.event.data.type == 'press_short' }}
       - condition: template
         value_template: '{{ is_state( seq_status_ent, ''3.0'') }}'
     sequence:
@@ -149,7 +154,7 @@ action:
     - and:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.subtype == !input 'button_four' and trigger.event.data.type == 'press_short' }}
+          {{ trigger.event.data.subtype == button_4 and trigger.event.data.type == 'press_short' }}
       - condition: template
         value_template: '{{ is_state( seq_status_ent, ''7.0'') }}'
     sequence:
@@ -164,7 +169,7 @@ action:
     - and:
       - condition: template
         value_template: >-
-          {{ trigger.event.data.subtype == !input 'button_five' and trigger.event.data.type == 'press_short' }}
+          {{ trigger.event.data.subtype == button_5 and trigger.event.data.type == 'press_short' }}
       - condition: template
         value_template: '{{ is_state( seq_status_ent, ''15.0'') }}'
     sequence:
