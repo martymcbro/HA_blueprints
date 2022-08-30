@@ -1,0 +1,201 @@
+blueprint:
+  name: HmIP-WRC6 Keypad 5 button cypher to turn on something
+  description: "This will accept 5 button presses on HmIP-WRC6 Keypad and
+    use them to perform an action.  RE open a lock, or whatever.
+  domain: automation
+  homeassistant:
+    min_version: 2022.5.2
+  input:
+    switch:
+      name: HmIP-WRC6 Device
+      description: Please select a HmIP-WRC6 entity of your Homematic (not Homematic Cloud) integration by typing in the name of the device which was set in your CCU.     
+    button_one:
+      name: Button Press One
+      description: '```Number``` for First Button Pressed'
+      selector:
+        number:
+          min: 1
+          max: 6
+          mode: box
+    button_two:
+      name: Button Press Two
+      description: '```Number``` for Second Button Pressed'
+      selector:
+        number:
+          min: 1
+          max: 6
+          mode: box
+    button_three:
+      name: Button Press Three
+      description: '```Number``` for Third Button Pressed'
+      selector:
+        number:
+          min: 1
+          max: 6
+          mode: box
+    button_four:
+      name: Button Press Four
+      description: '```Number``` for Forth Button Pressed'
+      selector:
+        number:
+          min: 1
+          max: 6
+          mode: box
+    button_five:
+      name: Button Press Five
+      description: '```Number``` for Fifth Button Pressed'
+      selector:
+        number:
+          min: 1
+          max: 6
+          mode: box
+    lock_control:
+      name: Buffer for the Final Lock Enable
+      description: '```input_boolean``` - Final Enable to trigger your lock or action'
+      selector:
+        entity:
+          domain: input_boolean
+          multiple: false
+    seq_status:
+      name: Control Sequence Status Placeholder
+      description: '```input_number``` - The internal use lock sequence number (set range
+        to 0 to 100) You will need one of these for every copy of this automation,  IE
+        one for every lock code.'
+      selector:
+        entity:
+          domain: input_number
+          multiple: false
+    on_timer:
+      name: Lock On Time in Seconds
+      description: Time output signal is on in seconds.  Generally 5 seconds is good
+        here.
+      default: 60
+      selector:
+        number:
+          min: 5.0
+          max: 360.0
+          unit_of_measurement: seconds
+          mode: slider
+          step: 1.0
+variables:
+  seq_status_ent: !input 'seq_status'
+  seq_status_last: '{{ expand(seq_status_ent)[0].last_changed | as_timestamp }}'
+  seq_status_val: '{{ expand(seq_status_ent)[0].state }}'
+  tnow: '{{ as_timestamp(now()) }}'
+mode: single
+max_exceeded: silent
+trigger:
+- platform: event
+  event_type: homematic.keypress
+  event_data:
+    name: !input 'switch'
+action:
+- alias: Reset seq number to 99 if timeout occurred
+  service: input_number.set_value
+  data:
+    entity_id: !input 'seq_status'
+    value: >
+      {% if seq_status_last < tnow - (5*60) %}
+        {# It's been too long so reset the sequence #}
+        99
+      {% else %} 
+        {# Timing is good, so accept the value set #}
+        {{ seq_status_val }}
+      {% endif %}
+- choose:
+  - alias: Somebody pushed the first button
+    conditions:
+      - condition: template
+        value_template: >-
+          {{ trigger.event.data.channel == !input 'button_one' and trigger.event.data.param == 'PRESS_SHORT' }}
+    sequence:
+    - alias: Set seq number to 1
+      service: input_number.set_value
+      data:
+        entity_id: !input 'seq_status'
+        value: 1
+  - alias: Button 2 pushed in correct sequence number order
+    conditions:
+    - and:
+      - condition: template
+        value_template: >-
+          {{ trigger.event.data.channel == !input 'button_two' and trigger.event.data.param == 'PRESS_SHORT' }}
+      - condition: template
+        value_template: '{{ is_state( seq_status_ent, ''1.0'') }}'
+    sequence:
+    - alias: Set seq number to 3
+      service: input_number.set_value
+      data:
+        value: 3
+      target:
+        entity_id: !input 'seq_status'
+  - alias: Button 3 pushed in correct sequence number order
+    conditions:
+    - and:
+      - condition: template
+        value_template: >-
+          {{ trigger.event.data.channel == !input 'button_three' and trigger.event.data.param == 'PRESS_SHORT' }}
+      - condition: template
+        value_template: '{{ is_state( seq_status_ent, ''3.0'') }}'
+    sequence:
+    - alias: Set seq number to 7
+      service: input_number.set_value
+      data:
+        value: 7
+      target:
+        entity_id: !input 'seq_status'
+  - alias: Button 4 pushed in correct sequence number order
+    conditions:
+    - and:
+      - condition: template
+        value_template: >-
+          {{ trigger.event.data.channel == !input 'button_four' and trigger.event.data.param == 'PRESS_SHORT' }}
+      - condition: template
+        value_template: '{{ is_state( seq_status_ent, ''7.0'') }}'
+    sequence:
+    - alias: Set seq number to 15
+      service: input_number.set_value
+      data:
+        value: 15
+      target:
+        entity_id: !input 'seq_status'
+  - alias: Button 5 pushed in correct sequence number order
+    conditions:
+    - and:
+      - condition: template
+        value_template: >-
+          {{ trigger.event.data.channel == !input 'button_five' and trigger.event.data.param == 'PRESS_SHORT' }}
+      - condition: template
+        value_template: '{{ is_state( seq_status_ent, ''15.0'') }}'
+    sequence:
+    - alias: Set seq number to 31
+      service: input_number.set_value
+      data:
+        value: 31
+      target:
+        entity_id: !input 'seq_status'
+    - alias: Enable the Lock
+      service: input_boolean.turn_on
+      entity_id: !input 'lock_control'
+    - alias: Leave the lock enabled for a time limit
+      delay: !input 'on_timer'
+    - alias: Disable the Lock normal
+      service: input_boolean.turn_off
+      entity_id: !input 'lock_control'
+    - alias: Reset status number normal
+      service: input_number.set_value
+      data:
+        value: 0
+      target:
+        entity_id: !input 'seq_status'
+  default:
+  - alias: Reset status number on fail code
+    service: input_number.set_value
+    data:
+      value: 0
+    target:
+      entity_id: !input 'seq_status'
+  - alias: Shut it down on fail code
+    service: input_boolean.turn_off
+    entity_id: !input 'lock_control'
+
