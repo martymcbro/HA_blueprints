@@ -1,7 +1,7 @@
 blueprint:
   name: HmIP-WRC6 Keypad 5 button cypher to turn on something
   description: "This will accept 5 button presses on HmIP-WRC6 Keypad and
-    use them to perform an action.  RE open a lock, or whatever.
+    use them to perform an action.  RE open a lock, or whatever."
   domain: automation
   homeassistant:
     min_version: 2022.5.2
